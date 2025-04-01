@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatApp</title>
+</head>
+<body>
+    <h1>Topics</h1>
+    <ul id="topic_themen">
+        <!-- Hier werden die Topics eingefügt -->
+    </ul>
+    <script>
+        // Daten aus MariaDB abrufen -- display auf der index seite
+        function getTopics() {
+            fetch("http://localhost:3000/topic")
+                .then(response => response.json())
+                .then(data => {
+                    let tabelle = document.getElementById("topic_themen");
+                    tabelle.innerHTML = "";  // Alte Einträge entfernen
+
+                    data.forEach(chats => {
+                        //let listItem = `${chats.Topic}<br>`;
+                        let listItem = `<li>
+                            <a href="detail.html?Topic=${chats.Topic}">[${chats.Topic}]</a>
+                        </li>`;
+                        tabelle.innerHTML += listItem;
+                    });
+                })
+                .catch(error => console.error("Fehler:", error));
+        }
+
+        // Lade Benutzer beim Start
+        window.onload = getTopics();
+    </script>
+
+    <h3>New Chat Topic:</h3>
+    <form id="form_topic">
+        <label for="topic">Topic:</label>
+        <input type="text" id="topic" name="topic" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <p id="responseMessage"></p>
+
+    <script>
+        document.getElementById("form_topic").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            let formData = {
+                topic: document.getElementById("topic").value
+            };
+
+            fetch("http://localhost:3000/submit", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("responseMessage").innerText = data.message;
+            })
+            .catch(error => console.error("Fehler:", error));
+        });
+    </script>
+</body>
+</html>

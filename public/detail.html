@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topic</title>
+</head>
+<body>
+    <p><span id="topic_text"></span></p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Sender</th>
+                <th>Content</th>
+            </tr>
+        </thead>
+        <tbody id="nameContent">
+            <!-- Daten werden hier eingefügt -->
+        </tbody>
+    </table>
+
+    <h2>Sender</h2>
+    <form id="chatten">
+        <label for="sender">Sender</label>
+        <input type="text" id="sender" placeholder="Sender" required>
+
+        <label for="content">Content</label>
+        <input type="text" id="content" placeholder="Content" required>
+
+        <button type="submit">Senden</button>
+    </form>
+    <script>
+        // Daten aus MariaDB abrufen -- display auf der index seite
+        function getContent() {
+            fetch("http://localhost:3000/topic/:content")//fetch("http://localhost:3000/topic")
+                .then(response => response.json())
+                .then(data => {
+                    let tabelle = document.getElementById("nameContent");
+                    tabelle.innerHTML = "";  // Alte Einträge entfernen
+
+                    data.forEach(inhalt => {
+                        let row = `<tr>
+                            <td>${inhalt.sender}</td>
+                            <td>${inhalt.content}</td>
+                        </tr>`;
+                        tabelle.innerHTML += row;
+                    });
+                })
+                .catch(error => console.error("Fehler:", error));
+        }
+
+        // Lade Benutzer beim Start
+        window.onload = getTopics();
+    </script>
+
+    <br>
+    <a href="index.html">Zurück zur Homepage</a>
+</body>
+</html>
