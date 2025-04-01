@@ -10,28 +10,28 @@
     <ul id="topic_themen">
         <!-- Hier werden die Topics eingefügt -->
     </ul>
+
     <script>
-        // Daten aus MariaDB abrufen -- display auf der index seite
         function getTopics() {
             fetch("http://localhost:3000/topic")
-                .then(response => response.json())
-                .then(data => {
-                    let tabelle = document.getElementById("topic_themen");
-                    tabelle.innerHTML = "";  // Alte Einträge entfernen
+            .then(response => response.json())
+            .then(data => {
+                let tabelle = document.getElementById("topic_themen");
+                tabelle.innerHTML = "";  // Alte Einträge entfernen
 
-                    data.forEach(chats => {
-                        //let listItem = `${chats.Topic}<br>`;
-                        let listItem = `<li>
-                            <a href="detail.html?Topic=${chats.Topic}">[${chats.Topic}]</a>
-                        </li>`;
-                        tabelle.innerHTML += listItem;
-                    });
-                })
-                .catch(error => console.error("Fehler:", error));
+                data.forEach(chats => {
+                    let listItem = `<li>
+                        <a href="detail.html?id=${chats.ID}">
+                            [${chats.Topic}]
+                        </a>
+                    </li>`;
+                    tabelle.innerHTML += listItem;
+                });
+            })
+            .catch(error => console.error("Fehler:", error));
         }
 
-        // Lade Benutzer beim Start
-        window.onload = getTopics();
+        window.onload = getTopics; // Korrektur
     </script>
 
     <h3>New Chat Topic:</h3>
@@ -59,6 +59,7 @@
             .then(response => response.json())
             .then(data => {
                 document.getElementById("responseMessage").innerText = data.message;
+                getTopics(); // Liste neu laden!
             })
             .catch(error => console.error("Fehler:", error));
         });

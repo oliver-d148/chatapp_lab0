@@ -22,7 +22,7 @@ const db = mysql.createConnection({
 
 // Route zum Abrufen aller Topics
 app.get("/topic", (req, res) => {
-    const sql = "SELECT Topic FROM chats";
+    const sql = "SELECT ID, Topic FROM chats";
     db.query(sql, (err, result) => {
         if (err) {
             return res.status(500).json({ message: "Fehler beim Abrufen der Daten", error: err });
@@ -32,17 +32,13 @@ app.get("/topic", (req, res) => {
     });
 });
 
-app.get('/topic/:content', (req, res) => {
-    //const chatid = req.params.chatid;
+app.get('/topic/:id', (req, res) => {
+    const chatId = req.params.id;
 
-    const sql = 'SELECT sender, content FROM inhalt WHERE chat_id = 1';
-    db.query(sql, [req.params.ID], (err, results) => {
-        if (err) throw err;
-        if (results.length > 0) {
-            res.render('topic', { Topic: results[0] });
-        } else {
-            res.status(404).send('Seite nicht gefunden');
-        }
+    const sql = 'SELECT sender, content FROM inhalt WHERE chat_id = ?';
+    db.query(sql, [chatId], (err, results) => {
+        if (err) return res.status(500).json({ message: "Fehler beim Abrufen", error: err });
+        res.json(results);
     });
 });
 
@@ -59,7 +55,24 @@ app.post("/submit", (req, res) => {
     });
 });
 
+app.post("/submit-message", (req, res) => {
+    const { sender, content, chat_id } = req.body;
+    const sender2 = req.body.sender;
+    const scontent2 = req.body.content;
+    const chat_id2 = req.body.chat_id;
 
+    if (!sender || !content ) {
+        return res.status(400).json({ message: "Alle Felder sind erforderlich!" });
+    }
+
+    const sql = "INSERT INTO inhalt (sender, content, chat_id) VALUES (?, ?, ?)";
+    db.query(sql, [sender2, scontent2, chat_id2], (err, result) => {
+        if (err) {
+            return res.status(500).json({ message: "Fehler beim Speichern", error: err });
+        }
+        res.json({ message: "Nachricht erfolgreich gespeichert!" });
+    });
+});
 
 // Server starten
 app.listen(PORT, () => {

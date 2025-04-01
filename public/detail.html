@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Topic</title>
+    <title>Topic Details</title>
 </head>
 <body>
-    <p><span id="topic_text"></span></p>
+    <h1>Chat Topic: <span id="topic_text"></span></h1>
 
+    <h2>Nachrichten</h2>
     <table>
         <thead>
             <tr>
@@ -20,24 +21,45 @@
         </tbody>
     </table>
 
-    <h2>Sender</h2>
-    <form id="chatten">
-        <label for="sender">Sender</label>
-        <input type="text" id="sender" placeholder="Sender" required>
+    <h3>Neue Nachricht hinzufügen</h3>
+    <form id="messageForm">
+        <label for="sender">Sender:</label>
+        <input type="text" id="sender" required>
 
-        <label for="content">Content</label>
-        <input type="text" id="content" placeholder="Content" required>
+        <label for="content">Content:</label>
+        <input type="text" id="content" required>
 
         <button type="submit">Senden</button>
     </form>
+
+    <p id="responseMessage"></p>
+
+    <br>
+    <a href="index.html">Zurück zur Homepage</a>
+
     <script>
-        // Daten aus MariaDB abrufen -- display auf der index seite
+        function getTopicIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get("id");
+        }
+
         function getContent() {
-            fetch("http://localhost:3000/topic/:content")//fetch("http://localhost:3000/topic")
+            const topicId = getTopicIdFromUrl();
+            if (!topicId) {
+                document.getElementById("topic_text").innerText = "Fehler: Keine ID in der URL!";
+                return;
+            }
+
+            fetch(`http://localhost:3000/topic/${topicId}`)
                 .then(response => response.json())
                 .then(data => {
                     let tabelle = document.getElementById("nameContent");
-                    tabelle.innerHTML = "";  // Alte Einträge entfernen
+                    tabelle.innerHTML = "";
+
+                    if (data.length === 0) {
+                        tabelle.innerHTML = "<tr><td colspan='2'>Keine Nachrichten gefunden.</td></tr>";
+                        return;
+                    }
 
                     data.forEach(inhalt => {
                         let row = `<tr>
@@ -46,15 +68,39 @@
                         </tr>`;
                         tabelle.innerHTML += row;
                     });
+
+                    document.getElementById("topic_text").innerText = `#${topicId}`;
                 })
-                .catch(error => console.error("Fehler:", error));
+                .catch(error => console.error("Fehler beim Abrufen der Daten:", error));
         }
 
-        // Lade Benutzer beim Start
-        window.onload = getTopics();
-    </script>
+        document.getElementById("messageForm").addEventListener("submit", function(event) {
+            event.preventDefault();
 
-    <br>
-    <a href="index.html">Zurück zur Homepage</a>
+            const topicId = getTopicIdFromUrl();
+            const sender = document.getElementById("sender").value;
+            const content = document.getElementById("content").value;
+
+            if (!topicId) {
+                alert("Fehler: Keine ID gefunden!");
+                return;
+            }
+
+            fetch("http://localhost:3000/submit-message", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sender, content, chat_id: topicId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("responseMessage").innerText = data.message;
+                getContent(); // Tabelle aktualisieren
+                document.getElementById("messageForm").reset(); // Formular leeren
+            })
+            .catch(error => console.error("Fehler:", error));
+        });
+
+        window.onload = getContent;
+    </script>
 </body>
 </html>
