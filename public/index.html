@@ -17,7 +17,7 @@
             .then(response => response.json())
             .then(data => {
                 let tabelle = document.getElementById("topic_themen");
-                tabelle.innerHTML = "";  // Alte Einträge entfernen
+                tabelle.innerHTML = "";  // 🔥 Löscht alte Einträge
 
                 data.forEach(chats => {
                     let listItem = `<li>
@@ -31,7 +31,7 @@
             .catch(error => console.error("Fehler:", error));
         }
 
-        window.onload = getTopics; // Korrektur
+        document.addEventListener("DOMContentLoaded", getTopics);
     </script>
 
     <h3>New Chat Topic:</h3>
@@ -45,21 +45,24 @@
 
     <script>
         document.getElementById("form_topic").addEventListener("submit", function(event) {
-            event.preventDefault();
+            event.preventDefault(); // 🔥 Verhindert Seiten-Neuladen
 
-            let formData = {
-                topic: document.getElementById("topic").value
-            };
+            //let formData = {
+                //topic: document.getElementById("topic").value
+            //};
+
+            topic = document.getElementById("topic").value
 
             fetch("http://localhost:3000/submit", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({topic})
             })
             .then(response => response.json())
             .then(data => {
                 document.getElementById("responseMessage").innerText = data.message;
-                getTopics(); // Liste neu laden!
+                document.getElementById("form_topic").reset(); // 🧹 Formular leeren
+                getTopics(); // 🔥 Liste sofort neu laden!
             })
             .catch(error => console.error("Fehler:", error));
         });
